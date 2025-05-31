@@ -1,4 +1,3 @@
-// lib/widgets/phone_list_item.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
@@ -31,11 +30,9 @@ class PhoneListItem extends StatelessWidget {
             ),
           );
           if (result == true) {
-            // Jika ada perubahan (edit/delete) di detail
             onDataChanged?.call();
           } else {
-            // Jika hanya status favorit yang berubah
-            onDataChanged?.call(); // Tetap refresh untuk status favorit di list
+            onDataChanged?.call();
           }
         },
         child: Padding(

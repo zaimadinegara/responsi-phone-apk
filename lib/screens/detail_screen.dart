@@ -1,14 +1,11 @@
-// lib/screens/detail_screen.dart
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../api/api_service.dart';
 import '../models/phone.dart';
 import '../widgets/favorite_button.dart';
-import '../utils/local_storage_service.dart'; // <-- PASTIKAN IMPOR INI ADA DAN TIDAK DIKOMENTARI
+import '../utils/local_storage_service.dart';
 import 'add_edit_phone_screen.dart';
-
-// enum ItemType { movie, cloth } // Tidak diperlukan jika screen ini khusus phone
 
 class DetailScreen extends StatefulWidget {
   final String itemId;
@@ -27,15 +24,11 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint("DetailScreen initState: itemId = ${widget.itemId}");
     _fetchDetail();
   }
 
   void _fetchDetail() {
     if (mounted) {
-      debugPrint(
-        "DetailScreen _fetchDetail: Calling fetchPhoneDetail for ${widget.itemId}",
-      );
       setState(() {
         _phoneDetailFuture = _apiService.fetchPhoneDetail(widget.itemId);
       });
@@ -47,7 +40,6 @@ class _DetailScreenState extends State<DetailScreen> {
       context: context,
       barrierDismissible: true,
       builder: (BuildContext dialogContext) {
-        /* ... (Kode Dialog Konfirmasi sama) ... */
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
@@ -67,7 +59,7 @@ class _DetailScreenState extends State<DetailScreen> {
               child: Text(
                 'Batal',
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  color: Theme.of(dialogContext).textTheme.bodySmall?.color,
                 ),
               ),
               onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -96,10 +88,10 @@ class _DetailScreenState extends State<DetailScreen> {
   Future<void> _performDelete(Phone phone) async {
     try {
       bool success = await _apiService.deletePhone(phone.id.toString());
-      if (success && mounted) {
-        await LocalStorageService().removeFavoritePhone(
-          phone.id.toString(),
-        ); // Pastikan LocalStorageService diimpor jika ini dipakai
+      if (!mounted) return;
+
+      if (success) {
+        await LocalStorageService().removeFavoritePhone(phone.id.toString());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Ponsel "${phone.name}" berhasil dihapus.'),
@@ -110,16 +102,15 @@ class _DetailScreenState extends State<DetailScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Gagal menghapus ponsel: ${e.toString().substring(0, (e.toString().length > 100 ? 100 : e.toString().length))}...',
-            ),
-            backgroundColor: Colors.red.shade600,
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Gagal menghapus ponsel: ${e.toString().substring(0, (e.toString().length > 100 ? 100 : e.toString().length))}...',
           ),
-        );
-      }
+          backgroundColor: Colors.red.shade600,
+        ),
+      );
     }
   }
 
@@ -128,71 +119,53 @@ class _DetailScreenState extends State<DetailScreen> {
       context,
       MaterialPageRoute(builder: (context) => AddEditPhoneScreen(phone: phone)),
     );
-    if (result == true && mounted) {
+    if (!mounted) return;
+    if (result == true) {
       _fetchDetail();
       _dataChangedOnDetail = true;
     }
   }
 
-  // PERBAIKAN: _buildShimmerDetail() mengembalikan Widget biasa, bukan CustomScrollView
   Widget _buildShimmerDetail() {
-    debugPrint("DetailScreen: Building Shimmer Detail");
-    return SingleChildScrollView(
-      // Atau Column jika konten shimmer tidak panjang
-      padding: const EdgeInsets.all(16.0),
-      child: Shimmer.fromColors(
-        baseColor: Colors.grey.shade300,
-        highlightColor: Colors.grey.shade100,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Placeholder untuk Gambar Besar
-            Container(
-              height:
-                  MediaQuery.of(context).size.width * 0.7, // Sesuaikan tinggi
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.only(bottom: 20),
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverAppBar(
+          expandedHeight: MediaQuery.of(context).size.width * 0.75,
+          pinned: true,
+          backgroundColor: Colors.grey[300],
+          flexibleSpace: FlexibleSpaceBar(
+            background: Shimmer.fromColors(
+              baseColor: Colors.grey[400]!,
+              highlightColor: Colors.grey[200]!,
+              child: Container(color: Colors.white),
             ),
-            // Placeholder untuk Judul
-            Container(
-              width: double.infinity,
-              height: 28,
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 10),
-            ),
-            // Placeholder untuk Harga
-            Container(
-              width: 150,
-              height: 24,
-              color: Colors.white,
-              margin: const EdgeInsets.only(bottom: 16),
-            ),
-            // Placeholder untuk baris detail
-            _buildShimmerDetailRow(),
-            _buildShimmerDetailRow(),
-            _buildShimmerDetailRow(),
-          ],
+          ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildShimmerDetailRow() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        children: [
-          Container(width: 20, height: 20, color: Colors.white),
-          const SizedBox(width: 12),
-          Container(width: 80, height: 16, color: Colors.white),
-          const SizedBox(width: 8),
-          Expanded(child: Container(height: 16, color: Colors.white)),
-        ],
-      ),
+        SliverList(
+          delegate: SliverChildListDelegate([
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Shimmer.fromColors(
+                baseColor: Colors.grey[300]!,
+                highlightColor: Colors.grey[100]!,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:
+                      List.generate(
+                        5,
+                        (index) => Container(
+                          width: double.infinity,
+                          height: 20,
+                          color: Colors.white,
+                          margin: const EdgeInsets.only(bottom: 10),
+                        ),
+                      ).toList(),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      ],
     );
   }
 
@@ -202,7 +175,6 @@ class _DetailScreenState extends State<DetailScreen> {
     String label,
     String? value,
   ) {
-    // ... (Kode _buildDetailRow tetap sama seperti sebelumnya) ...
     if (value == null || value.isEmpty) return const SizedBox.shrink();
     final textTheme = Theme.of(context).textTheme;
     return Padding(
@@ -213,7 +185,9 @@ class _DetailScreenState extends State<DetailScreen> {
           Icon(
             icon,
             size: 20,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.9),
+            color: Theme.of(
+              context,
+            ).colorScheme.primary.withAlpha(((0.9 * 255).round())),
           ),
           const SizedBox(width: 16),
           Text(
@@ -239,44 +213,20 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(
-      "DetailScreen build method called. _phoneDetailFuture is set: ${_phoneDetailFuture != null}",
-    );
     final textTheme = Theme.of(context).textTheme;
 
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.pop(context, _dataChangedOnDetail);
-        return true;
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) {
+        if (didPop) {}
       },
       child: Scaffold(
-        // AppBar sekarang dibuat di dalam FutureBuilder atau sebagai AppBar utama Scaffold
-        // Jika ingin AppBar tetap terlihat saat loading/error, letakkan di luar FutureBuilder
-        // Untuk sementara, kita buat AppBar sederhana di sini, dan AppBar utama akan dibangun
-        // saat data sudah ada di dalam CustomScrollView.
-        appBar: AppBar(
-          title: const Text('Detail Ponsel'), // Judul sementara
-          elevation: 0, // Atau 1 jika ingin ada shadow
-          backgroundColor:
-              Theme.of(
-                context,
-              ).scaffoldBackgroundColor, // Samakan dengan background
-          foregroundColor: Theme.of(context).appBarTheme.foregroundColor,
-          iconTheme: Theme.of(context).appBarTheme.iconTheme,
-        ),
         body: FutureBuilder<Phone>(
           future: _phoneDetailFuture,
           builder: (context, snapshot) {
-            debugPrint(
-              "DetailScreen FutureBuilder: ConnectionState = ${snapshot.connectionState}",
-            );
             if (snapshot.connectionState == ConnectionState.waiting) {
-              debugPrint("DetailScreen FutureBuilder: Waiting for data...");
-              return _buildShimmerDetail(); // Menggunakan _buildShimmerDetail yang sudah diperbaiki
+              return _buildShimmerDetail();
             } else if (snapshot.hasError) {
-              debugPrint(
-                "DetailScreen FutureBuilder: Error - ${snapshot.error}",
-              );
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -311,35 +261,28 @@ class _DetailScreenState extends State<DetailScreen> {
                 ),
               );
             } else if (!snapshot.hasData) {
-              debugPrint("DetailScreen FutureBuilder: No data.");
               return const Center(
                 child: Text('Detail ponsel tidak ditemukan.'),
               );
             } else {
               final Phone phone = snapshot.data!;
-              debugPrint(
-                "DetailScreen FutureBuilder: Data received - ${phone.name}",
-              );
               return CustomScrollView(
                 slivers: <Widget>[
                   SliverAppBar(
                     expandedHeight: MediaQuery.of(context).size.width * 0.8,
                     floating: false,
                     pinned: true,
-                    // backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Dihapus agar gambar bisa jadi background penuh
+                    backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                     elevation: 1,
-                    // iconTheme: IconThemeData(color: Theme.of(context).appBarTheme.foregroundColor), // Dihapus karena diatur oleh AppBar utama atau Scaffold
-                    automaticallyImplyLeading: true, // Agar tombol back muncul
-                    leading:
-                        ModalRoute.of(context)?.canPop == true
-                            ? BackButton(color: Colors.white.withOpacity(0.8))
-                            : null, // Tombol back putih jika ada gambar
+                    iconTheme: IconThemeData(
+                      color: Theme.of(context).appBarTheme.foregroundColor,
+                    ),
                     actions: [
                       IconButton(
                         icon: Icon(
                           Icons.edit_note_outlined,
-                          color: Colors.white.withOpacity(0.8),
-                        ), // Buat ikon kontras dengan gambar
+                          color: Theme.of(context).appBarTheme.foregroundColor,
+                        ),
                         onPressed: () => _navigateToEditScreen(phone),
                         tooltip: 'Edit Ponsel',
                       ),
@@ -352,8 +295,8 @@ class _DetailScreenState extends State<DetailScreen> {
                       IconButton(
                         icon: Icon(
                           Icons.delete_sweep_outlined,
-                          color: Colors.white.withOpacity(0.8),
-                        ), // Buat ikon kontras
+                          color: Theme.of(context).appBarTheme.foregroundColor,
+                        ),
                         onPressed: () => _confirmDelete(context, phone),
                         tooltip: 'Hapus Ponsel',
                       ),
@@ -361,54 +304,29 @@ class _DetailScreenState extends State<DetailScreen> {
                     flexibleSpace: FlexibleSpaceBar(
                       background: Hero(
                         tag: 'phone-image-${phone.id}',
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            CachedNetworkImage(
-                              imageUrl: phone.imgUrl,
-                              fit:
-                                  BoxFit
-                                      .cover, // Cover agar memenuhi FlexibleSpaceBar
-                              placeholder:
-                                  (context, url) => Shimmer.fromColors(
-                                    baseColor: Colors.grey.shade300,
-                                    highlightColor: Colors.grey.shade100,
-                                    child: Container(color: Colors.white),
-                                  ),
-                              errorWidget:
-                                  (context, url, error) => Container(
-                                    color: Colors.grey.shade200,
-                                    child: const Icon(
-                                      Icons.broken_image_outlined,
-                                      size: 60,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                            ),
-                            // Gradient agar title AppBar tetap terbaca di atas gambar
-                            const DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment(
-                                    0.0,
-                                    0.9,
-                                  ), // Gradient mulai lebih ke bawah
-                                  end: Alignment(0.0, 0.0), // Ke atas
-                                  colors: <Color>[
-                                    Color(
-                                      0x99000000,
-                                    ), // Hitam transparan di bawah
-                                    Color(0x00000000), // Transparan di atas
-                                  ],
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CachedNetworkImage(
+                            imageUrl: phone.imgUrl,
+                            fit: BoxFit.contain,
+                            placeholder:
+                                (context, url) => Shimmer.fromColors(
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.grey.shade100,
+                                  child: Container(color: Colors.white),
                                 ),
-                              ),
-                            ),
-                          ],
+                            errorWidget:
+                                (context, url, error) => Container(
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(
+                                    Icons.broken_image_outlined,
+                                    size: 60,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                          ),
                         ),
                       ),
-                      // Judul bisa ditaruh di sini jika diinginkan, atau di AppBar utama
-                      // title: Text(phone.name, style: TextStyle(color: Colors.white, fontSize: 16.0)),
-                      // centerTitle: true,
                     ),
                   ),
                   SliverList(

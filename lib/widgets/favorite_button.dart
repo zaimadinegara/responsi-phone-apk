@@ -1,4 +1,3 @@
-// lib/widgets/favorite_button.dart
 import 'package:flutter/material.dart';
 import '../utils/local_storage_service.dart';
 

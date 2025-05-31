@@ -1,6 +1,3 @@
-// lib/models/phone.dart
-import 'package:flutter/foundation.dart';
-
 class Phone {
   final int id;
   final String name;
@@ -28,7 +25,6 @@ class Phone {
       try {
         return DateTime.parse(dateString);
       } catch (e) {
-        debugPrint('Error parsing date: $dateString, error: $e');
         return null;
       }
     }
@@ -47,17 +43,12 @@ class Phone {
     );
   }
 
-  // Disesuaikan untuk mengirim field yang relevan untuk POST dan PUT
   Map<String, dynamic> toJson() {
     return {
       'name': name,
       'brand': brand,
       'price': price,
       'specification': specification,
-      // img_url tidak dikirim karena di-random otomatis oleh API saat POST,
-      // dan untuk PUT, kita asumsikan API tidak mengizinkan update img_url via body,
-      // atau jika iya, perlu ditambahkan field 'img_url': imgUrl di sini.
-      // Untuk kesederhanaan dan sesuai dokumentasi POST, kita tidak sertakan.
     };
   }
 }

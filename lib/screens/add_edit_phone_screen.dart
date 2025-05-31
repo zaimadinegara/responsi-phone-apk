@@ -1,4 +1,3 @@
-// lib/screens/add_edit_phone_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/phone.dart';
@@ -53,31 +52,18 @@ class _AddEditPhoneScreenState extends State<AddEditPhoneScreen> {
         _isLoading = true;
       });
 
-      // imgUrl tidak diinput karena di-generate API.
-      // Jika mode edit dan ingin mempertahankan imgUrl lama (API tidak mengizinkan update imgUrl),
-      // maka imgUrl lama harus di-pass. Model Phone kita akan handle ini.
       final phoneDataFromForm = Phone(
-        id:
-            widget.phone?.id ??
-            0, // Untuk create, ID akan diabaikan/digenerate server
+        id: widget.phone?.id ?? 0,
         name: _nameController.text,
         brand: _brandController.text,
         price: int.tryParse(_priceController.text) ?? 0,
         specification: _specificationController.text,
-        // imgUrl, createdAt, updatedAt akan diurus oleh server atau tidak relevan untuk dikirim saat create/update.
-        // Jika mode edit, imgUrl lama bisa disertakan jika model dan API mengizinkannya.
-        // Model Phone kita saat ini tidak menyertakan imgUrl dalam toJson() jadi aman.
-        // Jika API membutuhkan imgUrl saat PUT (update), maka perlu disesuaikan.
-        imgUrl:
-            widget.phone?.imgUrl ??
-            '', // Menyertakan imgUrl lama jika edit, API yang menentukan
+        imgUrl: widget.phone?.imgUrl ?? '',
       );
 
       try {
         if (!_isEditMode) {
-          await _apiService.createPhone(
-            phoneDataFromForm,
-          ); // Tidak mengembalikan objek Phone
+          await _apiService.createPhone(phoneDataFromForm);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -103,10 +89,7 @@ class _AddEditPhoneScreenState extends State<AddEditPhoneScreen> {
           }
         }
         if (mounted) {
-          Navigator.pop(
-            context,
-            true,
-          ); // Kirim true untuk refresh di halaman sebelumnya
+          Navigator.pop(context, true);
         }
       } catch (e) {
         if (mounted) {
@@ -147,7 +130,7 @@ class _AddEditPhoneScreenState extends State<AddEditPhoneScreen> {
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
           prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
           filled: true,
-          fillColor: Colors.white.withOpacity(0.95),
+          fillColor: Colors.white.withAlpha(((0.95 * 255).round())),
         ),
         keyboardType: keyboardType,
         maxLines: maxLines,
@@ -244,7 +227,7 @@ class _AddEditPhoneScreenState extends State<AddEditPhoneScreen> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withAlpha(((0.5 * 255).round())),
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],

@@ -1,4 +1,3 @@
-// lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../api/api_service.dart';
@@ -20,13 +19,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint("HomeScreen initState: Calling _fetchData()");
     _fetchData();
   }
 
   void _fetchData() {
     if (mounted) {
-      debugPrint("HomeScreen _fetchData: Setting state for _phonesFuture");
       setState(() {
         _phonesFuture = _apiService.fetchPhones();
       });
@@ -85,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   SliverList _buildShimmerSliverList() {
-    debugPrint("HomeScreen: Building Shimmer SliverList");
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, index) => _buildShimmerItem(),
@@ -96,7 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("HomeScreen build method called");
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
@@ -140,20 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
               sliver: FutureBuilder<List<Phone>>(
                 future: _phonesFuture,
                 builder: (context, snapshot) {
-                  debugPrint(
-                    "HomeScreen FutureBuilder: ConnectionState = ${snapshot.connectionState}",
-                  );
-                  if (snapshot.hasError) {
-                    debugPrint(
-                      "HomeScreen FutureBuilder: snapshot.hasError - ${snapshot.error}",
-                    );
-                  }
-                  if (snapshot.hasData) {
-                    debugPrint(
-                      "HomeScreen FutureBuilder: snapshot.hasData - ${snapshot.data?.length} items",
-                    );
-                  }
-
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return _buildShimmerSliverList();
                   } else if (snapshot.hasError) {
@@ -199,7 +180,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     return SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(
-                        /* ... Empty State UI (sama seperti sebelumnya) ... */
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.phone_android_outlined,
+                                color: Colors.grey.shade400,
+                                size: 80,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Tidak ada ponsel ditemukan',
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Tekan tombol \'+\' untuk menambah ponsel baru.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey.shade600),
+                              ),
+                              const SizedBox(height: 24),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Refresh Data'),
+                                onPressed: _fetchData,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   } else {

@@ -1,4 +1,3 @@
-// lib/api/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/phone.dart';
@@ -16,7 +15,7 @@ class ApiService {
       if (response.statusCode == 200) {
         debugPrint(
           "ApiService: Response body: ${response.body.substring(0, (response.body.length > 500 ? 500 : response.body.length))}",
-        ); // Print first 500 chars
+        );
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
 
         if (responseBody['status'] == 'success') {
@@ -28,7 +27,7 @@ class ApiService {
             );
             if (phoneData.isEmpty) {
               debugPrint("ApiService: 'data' list is empty.");
-              return []; // Kembalikan list kosong jika data API kosong
+              return [];
             }
             List<Phone> phoneList = [];
             for (var item in phoneData) {
@@ -38,7 +37,6 @@ class ApiService {
                 debugPrint(
                   "ApiService: Error parsing individual phone item: $item, Error: $e",
                 );
-                // Lanjutkan parsing item lain, atau throw error jika satu item gagal dianggap fatal
               }
             }
             debugPrint(
@@ -71,7 +69,6 @@ class ApiService {
     }
   }
 
-  // ... (metode fetchPhoneDetail, createPhone, updatePhone, deletePhone tetap sama seperti versi terakhir yang sudah dikoreksi pathnya)
   Future<Phone> fetchPhoneDetail(String id) async {
     debugPrint(
       "ApiService: Attempting to fetch phone detail for id $id from $_baseUrl/phone/$id",
@@ -82,7 +79,6 @@ class ApiService {
         "ApiService: Detail Response status code: ${response.statusCode}",
       );
       if (response.statusCode == 200) {
-        // ... (sisa parsing sama)
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         if (responseBody['status'] == 'success' &&
             responseBody['data'] is Map) {
@@ -157,7 +153,7 @@ class ApiService {
       debugPrint(
         "ApiService: Update phone response status: ${response.statusCode}, Body: ${response.body}",
       );
-      // ... (sisa parsing sama)
+
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         if (responseBody['status'] == 'success' &&
@@ -188,7 +184,6 @@ class ApiService {
       debugPrint(
         "ApiService: Delete phone response status: ${response.statusCode}, Body: ${response.body}",
       );
-      // ... (sisa parsing sama)
       if (response.statusCode == 200 || response.statusCode == 204) {
         final Map<String, dynamic> responseBody = jsonDecode(response.body);
         if (responseBody['status'] == 'success') {

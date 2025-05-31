@@ -1,9 +1,6 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// Pastikan path impor ini benar:
-// File home_screen.dart dan favorite_screen.dart harus ada di dalam folder lib/screens/
 import 'screens/home_screen.dart';
 import 'screens/favorite_screen.dart';
 
@@ -121,7 +118,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key}); // Pastikan konstruktor ini const
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -131,8 +128,8 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _widgetOptions = <Widget>[
-    const HomeScreen(), // Memanggil konstruktor const HomeScreen
-    const FavoriteScreen(), // Memanggil konstruktor const FavoriteScreen
+    const HomeScreen(),
+    const FavoriteScreen(),
   ];
 
   void _onItemTapped(int index) {

@@ -1,4 +1,3 @@
-// lib/screens/favorite_screen.dart
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../api/api_service.dart';
@@ -7,7 +6,7 @@ import '../utils/local_storage_service.dart';
 import '../widgets/phone_list_item.dart';
 
 class FavoriteScreen extends StatefulWidget {
-  const FavoriteScreen({super.key}); // <-- KONSTRUKTOR CONST
+  const FavoriteScreen({super.key});
 
   @override
   State<FavoriteScreen> createState() => _FavoriteScreenState();
@@ -33,7 +32,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   Future<void> _loadFavoritePhones() async {
-    // ... (Implementasi _loadFavoritePhones sama seperti sebelumnya)
     if (!mounted) return;
     List<String> favoriteIds = await _localStorageService.getFavoritePhoneIds();
 
@@ -68,7 +66,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
             })
             .catchError((error) {
               if (mounted) {
-                debugPrint("Error loading favorite phones: $error");
+                // debugPrint("Error loading favorite phones: $error"); // Dihapus
                 throw error;
               }
               return <Phone>[];
@@ -78,7 +76,6 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   Widget _buildShimmerList() {
-    // ... (Implementasi _buildShimmerList sama seperti sebelumnya)
     return ListView.builder(
       padding: const EdgeInsets.all(0),
       itemCount: 3,
@@ -86,15 +83,63 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
           (context, index) => Shimmer.fromColors(
             baseColor: Colors.grey.shade300,
             highlightColor: Colors.grey.shade100,
-            child: Card(/* ... Isi Card Shimmer ... */),
+            child: Card(
+              elevation: 3.0,
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    const SizedBox(width: 16.0),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 20,
+                            width: double.infinity,
+                            color: Colors.white,
+                            margin: const EdgeInsets.only(bottom: 8),
+                          ),
+                          Container(
+                            height: 16,
+                            width: 100,
+                            color: Colors.white,
+                            margin: const EdgeInsets.only(bottom: 8),
+                          ),
+                          Container(
+                            height: 14,
+                            width: 200,
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // ... (Implementasi build method FavoriteScreen sama seperti versi lengkap terakhir)
-    // Termasuk CustomScrollView, SliverAppBar, dan FutureBuilder
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _loadFavoritePhones,
@@ -127,12 +172,72 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                   }
                   if (snapshot.hasError) {
                     return SliverFillRemaining(
-                      child: Center(child: Text("Error: ${snapshot.error}")),
-                    ); // Tampilan error sederhana
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline_rounded,
+                                color: Colors.red.shade400,
+                                size: 60,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Gagal memuat favorit.',
+                                style: Theme.of(context).textTheme.titleLarge,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '${snapshot.error}',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Coba Lagi'),
+                                onPressed: _loadFavoritePhones,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return SliverFillRemaining(
-                      child: Center(child: Text("Belum ada ponsel favorit.")),
-                    ); // Tampilan kosong sederhana
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.favorite_border_outlined,
+                                color: Colors.grey.shade400,
+                                size: 80,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Belum ada ponsel favorit',
+                                style: Theme.of(context).textTheme.headlineSmall
+                                    ?.copyWith(fontWeight: FontWeight.w600),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Ketuk ikon hati pada ponsel untuk menambahkannya ke sini.',
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
                   } else {
                     final favoritePhones = snapshot.data!;
                     return SliverList(
